@@ -5,32 +5,6 @@ from google.oauth2 import service_account
 import datetime
 from soctail_data import *
 
-
-'''
-    Ledger of ALL transactions
-    
-    Transactions to record. Need to differentiate between Expense and Revenue here
-    
-    Yearly budget
-    
-    Plan:
-
-    1. Export the months transfers as a CSV file in netbank
-    
-    2. Upload CSV file to CSVData on the monthly summary
-    
-    3. For each description, only keep the description
-    
-    3a. Extra parsing,
-            Merge transactions which have equal date, total and 
-            
-    4. Write parsed data to Ledger page
-    
-    5. Manually allocate all categories to the correct budget before using the next script
-    
-    - Colin Hon
-'''
-
 # Function to merge transactions
 def mergeTransactions(transactions, t):
     date, amount, description, _ = t
@@ -46,13 +20,12 @@ def mergeTransactions(transactions, t):
     
     if float(amount) < 0:
         t[2] = "Soctail Refund"
-        transactions.append(t)
-        return
+        description = t[2]
     
     # zID Check
     idCheck = False
     
-    for id in PRE_RELEASE_ID:
+    '''for id in PRE_RELEASE_ID:
         if id in description.lower():
             description = "Soctail Pre-Release"
             idCheck = True
@@ -82,8 +55,7 @@ def mergeTransactions(transactions, t):
             description = "Soctail Early Bird"
         else:
             description = "Soctail Pre-Release"
-            
-    t[2] = description
+    '''       
     
     for add_t in transactions:
         addedDate, addedAmount, addedDescription, _ = add_t
@@ -105,9 +77,9 @@ creds = service_account.Credentials.from_service_account_file(
 
 # The ID and range of the exported CSV data
 # CHANGE FOR EVERY MONTH!
-SUMMARY_ID = '1OhG1af4-r3FQ4_emuFoKm6ccdGvHPj64SmZQ7NJ2qo8'
-CSV_RANGE = 'CSVData!A1:C204'
-LEDGER_RANGE = 'Test!A1'
+SUMMARY_ID = '1gB9pvx6_kgp-oeo3Ronj7T2E6DnkoEQip1rchG9Vcys'
+CSV_RANGE = 'CSVData!A1:C31'
+LEDGER_RANGE = 'Ledger!A1'
 
 def main():
     
@@ -130,9 +102,38 @@ def main():
             transaction.append(1)
             mergeTransactions(parsedTransactions, transaction)
             
+        dates = [[t[0]] for t in parsedTransactions]
+        price = [[t[1]] for t in parsedTransactions]
+        description = [[t[2]] for t in parsedTransactions]
+        quantity = [[t[3]] for t in parsedTransactions]
+        
+        data = [
+            {
+                'range': 'Ledger!B5',
+                'values': dates
+            },
+            {
+                'range': 'Ledger!C5',
+                'values': price
+            },
+            {
+                'range': 'Ledger!F5',
+                'values': description
+            },
+            {
+                'range': 'Ledger!D5',
+                'values': quantity
+            }
+        ]
+        
+        body = {
+            'valueInputOption': "USER_ENTERED",
+            'data': data
+        }
+        
         # Write transactions to Ledger
-        request = sheet.values().update(spreadsheetId=SUMMARY_ID, range=LEDGER_RANGE, 
-            valueInputOption="USER_ENTERED", body={"values":parsedTransactions}).execute()
+        request = sheet.values().batchUpdate(
+                spreadsheetId=SUMMARY_ID, body=body).execute()
 
     except HttpError as err:
         print(err)
