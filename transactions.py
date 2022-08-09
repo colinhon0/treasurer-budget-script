@@ -1,3 +1,4 @@
+from urllib.error import HTTPError
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.oauth2 import service_account
@@ -36,11 +37,12 @@ def main():
             t[3] = t[3].replace('$','')
             if '-' in t[1]:
                 t[3] = t[3].replace('-','')
+                t[1] = t[1].replace('-','')
                 expenses.append(t)
             else:
                 income.append(t)
         
-        eDates = [[t[0]] for t in expenses]
+        """eDates = [[t[0]] for t in expenses]
         eAmount = [[t[3]] for t in expenses]
         eDescription = [[t[4]] for t in expenses]
         eCategory = [[t[6]] for t in expenses]
@@ -92,18 +94,67 @@ def main():
         
         # Write transactions to Transactions
         request = sheet.values().batchUpdate(
-                spreadsheetId=SUMMARY_ID, body=body).execute()
+                spreadsheetId=SUMMARY_ID, body=body).execute()"""
                 
                 
                 
         # Write to budget
         # Revenue
-        # TODO REFACTOR 
+        # TODO REFACTOR add try catches
+
         for inc in income:
-            print(inc)
-                            
+            body = {
+                'values' : [
+                    [
+                        inc[0],
+                        inc[4],
+                        "N/A",
+                        inc[2],
+                        inc[1],
+                        inc[3]
+                    ]
+                ]
+            }
+
+            incRange = "'" + inc[6]+"'!C9:H9"
+            if (inc[6] == "ARC Grant"):
+                incRange = "Admin!C9:H9"
+            
+            if (inc[6] != "Sponsorships"):
+                sheet.values().append(spreadsheetId=BUDGET_ID, range=incRange, valueInputOption="USER_ENTERED", body=body, insertDataOption="INSERT_ROWS").execute()
+
+            # find a way to do income summary xd
+
         for exp in expenses:
-            print(exp)
+            readExpenseColumn = sheet.values().get(spreadsheetId = BUDGET_ID, range="'"+ exp[6] + "'!C:C").execute()
+            expenseRows = readExpenseColumn.get('values', [])
+            expenseRangeStart = 0
+
+            for i in range(len(expenseRows)):
+                if expenseRows[i] == ['Expense']:
+                    expenseRangeStart = i + 3
+                    break
+            expenseStart = "!C" + str(expenseRangeStart) + ":I" + str(expenseRangeStart)
+
+            body = {
+                'values' : [
+                    [
+                        exp[0],
+                        exp[4],
+                        exp[7],
+                        exp[2],
+                        exp[1],
+                        exp[3]
+                    ]
+                ]
+            }
+
+            expRange = "'" + exp[6] + "'" + expenseStart
+            sheet.values().append(spreadsheetId=BUDGET_ID, range=expRange, valueInputOption="USER_ENTERED", body=body, insertDataOption="INSERT_ROWS").execute()
+
+
+        #for exp in expenses:
+            #sheet.values().append(spreadsheetId=BUDGET_ID)
             
         
         

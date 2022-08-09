@@ -5,6 +5,9 @@ from google.oauth2 import service_account
 import datetime
 from soctail_data import *
 
+# TODO https://www.commbank.com.au/developer/documentation/Transactions to populate CSVData or autoload transaction data
+# TODO Autofill with jira card information, now that would be poggers
+
 # Function to merge transactions
 def mergeTransactions(transactions, t):
     date, amount, description, _ = t
