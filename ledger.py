@@ -3,7 +3,6 @@ from googleapiclient.errors import HttpError
 from google.oauth2 import service_account
 
 import datetime
-from soctail_data import *
 
 # TODO https://www.commbank.com.au/developer/documentation/Transactions to populate CSVData or autoload transaction data
 # TODO Autofill with jira card information, now that would be poggers
@@ -80,8 +79,8 @@ creds = service_account.Credentials.from_service_account_file(
 
 # The ID and range of the exported CSV data
 # CHANGE FOR EVERY MONTH!
-SUMMARY_ID = '1gB9pvx6_kgp-oeo3Ronj7T2E6DnkoEQip1rchG9Vcys'
-CSV_RANGE = 'CSVData!A1:C31'
+SUMMARY_ID = '1hCSgQlYrYd2_OSxqoQgFE8z4znROwoskKFoluAaCbUA'
+CSV_RANGE = 'CSVData!A1:C174'
 LEDGER_RANGE = 'Ledger!A1'
 
 def main():

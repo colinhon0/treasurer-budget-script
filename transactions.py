@@ -14,8 +14,8 @@ creds = service_account.Credentials.from_service_account_file(
 
 # The ID and range of the exported CSV data
 # CHANGE FOR EVERY MONTH!
-SUMMARY_ID = '1gB9pvx6_kgp-oeo3Ronj7T2E6DnkoEQip1rchG9Vcys'
-LEDGER_RANGE = 'Ledger!B5:I109'
+SUMMARY_ID = '1hCSgQlYrYd2_OSxqoQgFE8z4znROwoskKFoluAaCbUA'
+LEDGER_RANGE = 'Ledger!B5:I221'
 BUDGET_ID = '1TxV6Jc5VTb6I9F2TzQ88MYJoM1d4COZfJM1c9JiTeaM'
 
 def main():
@@ -42,7 +42,7 @@ def main():
             else:
                 income.append(t)
         
-        """eDates = [[t[0]] for t in expenses]
+        eDates = [[t[0]] for t in expenses]
         eAmount = [[t[3]] for t in expenses]
         eDescription = [[t[4]] for t in expenses]
         eCategory = [[t[6]] for t in expenses]
@@ -94,7 +94,7 @@ def main():
         
         # Write transactions to Transactions
         request = sheet.values().batchUpdate(
-                spreadsheetId=SUMMARY_ID, body=body).execute()"""
+                spreadsheetId=SUMMARY_ID, body=body).execute()
                 
                 
                 
@@ -117,7 +117,7 @@ def main():
             }
 
             incRange = "'" + inc[6]+"'!C9:H9"
-            if (inc[6] == "ARC Grant"):
+            if (inc[6] == "ARC Grant" or inc[6] == "Interest"):
                 incRange = "Admin!C9:H9"
             
             if (inc[6] != "Sponsorships"):
@@ -126,6 +126,9 @@ def main():
             # find a way to do income summary xd
 
         for exp in expenses:
+            if (exp[6] == "Sponsorships"):
+                continue
+
             readExpenseColumn = sheet.values().get(spreadsheetId = BUDGET_ID, range="'"+ exp[6] + "'!C:C").execute()
             expenseRows = readExpenseColumn.get('values', [])
             expenseRangeStart = 0
@@ -136,12 +139,17 @@ def main():
                     break
             expenseStart = "!C" + str(expenseRangeStart) + ":I" + str(expenseRangeStart)
 
+            if 7 not in range(-len(exp), len(exp)):
+                res = "N/A"
+            else:
+                res = exp[7]
+            
             body = {
                 'values' : [
                     [
                         exp[0],
                         exp[4],
-                        exp[7],
+                        res,
                         exp[2],
                         exp[1],
                         exp[3]
